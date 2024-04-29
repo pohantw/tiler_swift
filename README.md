@@ -36,8 +36,47 @@ We want the software to analyze the sparsity in the given matrices and report th
 * Try to improve the software performance for fast searching.
 * Consider the data transfer time as overhead, weight it into the performance model.
 
+## Performance Definition
+The goal of this project is to do performant tiling. In terms of performance, we consider it from the following two perspectives:
+* **Search performance (SP)**
+    * How fast can the tool generate the tiling parameters?
+* **Tiling performance (TP)**
+    * How quickly can the computation be executed given the tiling parameters?
+
+![Performance Definition](presentation/img/performance-definition.png)
+
+With this in mind, we add the following two assumptions:
+
+**Assumption-1:** The data transfer time is small enough such that it won't be the bottleneck of the overall system. However, if there is enough time, we should also consider the case that the tranfer time is significant and think about the corresponding solutions.
+
+**Assumption-2:** There is unlimited storage on the CPU side to store the tiling results, such that there is no gap between each tiling search.
+
+Under these two assumptions, the overall performance is determined by SP and TP.
+
 ## Expected Deliverables
-**[Place Holder]** *This is where I want you to focus on what demo you are going to show during your presentation, or what [sequence of] graphs you hope to make in your report. This is the place where I'd like to see the most detail in your proposal, since if you define a clear goal, your project activities will involve just working back from this goal to determine what needs to be done. Are you trying to demonstrate an application, scheduled via Halide running at 30 fps on your laptop? Are you going to demonstrate reasonable accuracy models that were trained in 30 minutes of labeling work? Are you going to demonstrate a CUDA ray tracer that uses a BVH build using techniques from advanced graphics papers? Is there a particular image you want to create? Specifically, I want you to consider and write down how will you evaluate/determine the extent to which you were successful.*
+At the end of the project, we want to show how different tiling parameters/algorithms/models affect the performance. In our system, we have the following knobs that can affect the performance metrics:
+* Size of the input matrix
+* Sparsity of input matrix
+* Tile size (fixed tile size or variable tile size)
+* Search algorithm
+* Performance model
+* Matrix operation
+
+Specifically, we want to show the following figures (numbers are fake):
+
+### Search Algorithm (or Runtime Model) Performance
+
+![SP-algo](presentation/img/ex-perf-sp-vs-algo.png)
+![TP-algo](presentation/img/ex-perf-tp-vs-algo.png)
+These bar charts show the performance of using different searching algorithm, the same charts can also be used to show how different *runtime model* performs.
+
+### Fixed Tiling v.s. Variable Tiling
+![TP-algo](presentation/img/ex-perf-fix-vs-var.png)
+This bar chart shows the performance comparison between fixed-size tiling versus variable-size tiling. We expect to see better performance in variable-size tiling because it can adapt to local statistical distribution
+
+### Data Transfer Time Bottleneck
+![TP-algo](presentation/img/ex-perf-data-transfer.png)
+When the data transfer time is big enough, the total runtime should started to be bottlenecked by it. We expect the knee point is proportional to how big the tile size is. Hence, the solution is that the software will tend to choose bigger tile size when it sees the data transfer time is big, such that the overall runtime can be optimized.
 
 ## Risks
 **[Place Holder]** *Please document the biggest risks in the project. Often there are points or blockers such as, if I can't get this code to compile/run, then I can't do the work. Or, until I am successfully training this DNN and have reasonable trained model, I can't do aynthing else. I want you to think through the risks on your project, and consider how to eliminate/derisk these aspects of the project with as little work as possible.*
