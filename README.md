@@ -27,14 +27,16 @@ We want the software to analyze the sparsity in the given matrices and report th
 * Finalize the format for a configuration text file that contains the target operation and hardware constriants.
 * Implement basic software structure to read in the matrices and contraints, the write out the entire matrix without any tiling.
 * Repeat last step, but this time with fixed tiling.
-* feed the fixed tiling results to the downstream tool and make sure it can operate.
+* Feed the fixed tiling results to the downstream tool and make sure it can operate.
+* Measure the performance of our CGRA performing computation on the fixed tiling results using a simulator that mimics our sparse dataflow architecture [3].
 ### Advanced
-* Implement different tile size searching algorithms (for example, the dynamic reflexive tiling [3]). Starting from the easiest.
+* Implement different tile size searching algorithms (for example, the dynamic reflexive tiling [4]). Starting from the easiest.
 * Implement the performance model for different operations under given hardware constraints. Use this information as a guide for the searching algorithm.
 * Record the performance of the search space.
 ### Good to have
 * Try to improve the software performance for fast searching.
 * Consider the data transfer time as overhead, weight it into the performance model.
+* Perform actual hardware RTL simulation instead of the simulator to get more accurate performance readings.
 
 ## Performance Definition
 The goal of this project is to do performant tiling. In terms of performance, we consider it from the following two perspectives:
@@ -79,15 +81,19 @@ This bar chart shows the performance comparison between fixed-size tiling versus
 When the data transfer time is big enough, the total runtime should started to be bottlenecked by it. We expect the knee point is proportional to how big the tile size is. Hence, the solution is that the software will tend to choose bigger tile size when it sees the data transfer time is big, such that the overall runtime can be optimized.
 
 ## Risks
-**[Place Holder]** *Please document the biggest risks in the project. Often there are points or blockers such as, if I can't get this code to compile/run, then I can't do the work. Or, until I am successfully training this DNN and have reasonable trained model, I can't do aynthing else. I want you to think through the risks on your project, and consider how to eliminate/derisk these aspects of the project with as little work as possible.*
+* Non-square matrix tile splitting: After we obtained the desired tile size using this project, we will utilize a tool that is internal to our research group to split up the matrix into tiles. However, this tool currently only supports generating square tiles and further code modification is required.
+* Peformance model for tiling search: This is going to be the hardest part of this project, as we need to somehow estimate the runtime of a tiling option on the sparse dataflow hardware without carrying out element-wise intersection or union. The high performance requirement of our tiling search algorithm make this even more challenging.
+* Simulator/RTL runtime: from our experience, the time it takes to simulate our hardware using our simulator or perform RTL simulation could be very long, this would make result collection more challenging.
+
 
 ## Help
-**[Place Holder]** *What advice would like from Kayvon and Arden? Are there papers you need references to? Do you need a machine or computing resources to succeed?*
-
+Currently, none.
 
 ## References
 [1] K. Koul, et. al, "AHA: An Agile Approach to the Design of Coarse-Grained Reconfigurable Accelerators and Compilers," in ACM Transactions on Embedded Computing Systems (TECS), April 2022 (https://dl.acm.org/doi/full/10.1145/3534933)
 
 [2] O. Hsu, et. al, "The Sparse Abstract Machine," in International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS), March 2023 (https://dl.acm.org/doi/10.1145/3582016.3582051)
 
-[3] T. O. Odemuyiwa, et. at, "Accelerating Sparse Data Orchestration via Dynamic Reflexive Tiling," in International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS), March 2023 (https://dl.acm.org/doi/10.1145/3582016.3582064)
+[3] R. Lacouture, et. al, "comal" (https://github.com/stanford-ppl/comal)
+
+[4] T. O. Odemuyiwa, et. at, "Accelerating Sparse Data Orchestration via Dynamic Reflexive Tiling," in International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS), March 2023 (https://dl.acm.org/doi/10.1145/3582016.3582064)
