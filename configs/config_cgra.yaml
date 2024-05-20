@@ -1,0 +1,12 @@
+# memory capacity (KB)
+memory_capacity_glb: 128
+memory_capacity_mtile: 4
+
+# operation
+operation: "elementwise-add"
+
+# input matrix name
+input_matrix_name:
+  - "A"
+  - "B"
+  
