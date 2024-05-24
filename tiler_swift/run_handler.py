@@ -103,6 +103,26 @@ class RunHandler:
       for pair in results:
         f.write(str(pair) + "\n")
     print(f"Results saved to {output_path}/results.txt")
+    for idx, pairs in enumerate(self._tile_pairs):
+      tile_path = os.path.join(output_path, "tile_" + str(idx))
+      if not os.path.exists(tile_path):
+        os.makedirs(tile_path, exist_ok=True)
+      for name, tile in pairs.items():
+        numpy.save(os.path.join(tile_path, name), tile)
+        print(f"Tile saved to {tile_path}/{name}.npy")
+
+
+  def gen_tiles ( self, results ):
+    self._tile_pairs = []
+    for idx, pairs in enumerate(results):
+      self._tile_pairs.append({})
+      for name, tile_loc_size in pairs.items():
+        x = tile_loc_size[0]
+        y = tile_loc_size[1]
+        w = tile_loc_size[2]
+        h = tile_loc_size[3]
+        tile = self._tensors[name][x:x+w, y:y+h]
+        self._tile_pairs[idx][name] = tile
 
 
   def launch( self, config_path, tensor_path, output_path ):
@@ -125,6 +145,9 @@ class RunHandler:
 
     # sanity check
     self.results_sanity_check(results)
+
+    # generate tiles
+    self.gen_tiles(results)
 
     # save the results
     self.save_results(results, output_path)
