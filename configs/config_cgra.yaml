@@ -3,7 +3,7 @@ memory_capacity_glb: 128
 memory_capacity_mtile: 4
 
 # tool configuration
-tiling_algorithm: "greedy"
+tiling_algorithm: "qtree"
 performance_model: "opal"
 
 # operation

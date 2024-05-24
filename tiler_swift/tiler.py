@@ -1,3 +1,6 @@
+
+from tiler_qtree import Tiler_Qtree
+
 class Tiler:
 
 
@@ -18,10 +21,11 @@ class Tiler:
         return results
 
     
-    def tile_greedy( self ):
-        results = []
-        results.append( {'A':[0,0,10,10], 'B':[0,0,10,10]} )
-        return results
+    def tile_qtree( self ):
+        # for now, only support elementwise operations
+        assert self._config['operation'] in ['elementwise-add', 'elementwise-mul']
+        tq = Tiler_Qtree( self._config, self._tensors )
+        return tq.tile()
 
 
     def tile_dynamic_reflexive( self ):
@@ -32,15 +36,12 @@ class Tiler:
 
     def tile( self ):
 
-        # FIXME: testing
-        self._config['tiling_algorithm'] = "test"
-
         if self._config['tiling_algorithm'] == "test":
             return self.tile_test()
         elif self._config['tiling_algorithm'] == "simple":
             return self.tile_simple()
-        elif self._config['tiling_algorithm'] == "greedy":
-            return self.tile_greedy()
+        elif self._config['tiling_algorithm'] == "qtree":
+            return self.tile_qtree()
         elif self._config['tiling_algorithm'] == "dynamic_reflexive":
             return self.tile_dynamic_reflexive()
         else:
