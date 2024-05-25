@@ -11,17 +11,17 @@ class Tiler_Qtree:
         x, y, width, height = rect
 
         # loop through tensors, count the non-zeros in the tile
-        nnz = {}
+        nnzs = {}
         for tensor_name, tensor in self._tensors.items():
             tiled_tensor = tensor[y:y+height, x:x+width]
-            nnz[tensor_name] = numpy.count_nonzero(tiled_tensor)
-        
+            nnzs[tensor_name] = numpy.count_nonzero(tiled_tensor)
+
         # check if the tile fits in the memory tile
         # TODO: also need to check output
-        # TODO: now hard-coded to 15, need to change
+        # TODO: now hard-coded to 50, need to change
         tile_fit_ok = True
-        for tensor_name, nnz in nnz.items():
-            if nnz > 15:
+        for tensor_name, nnz in nnzs.items():
+            if nnz > 50:
                 tile_fit_ok = False
 
         # if the tile fits, return the tile
@@ -33,12 +33,17 @@ class Tiler_Qtree:
                 result[tensor_name] = [x, y, width, height]
             return [result]
         else:
-            half_width = width // 2
-            half_height = height // 2
-            q1 = self._tile_recursive( [x, y, half_width, half_height] )
-            q2 = self._tile_recursive( [x + half_width, y, half_width, half_height] )
-            q3 = self._tile_recursive( [x, y + half_height, half_width, half_height] )
-            q4 = self._tile_recursive( [x + half_width, y + half_height, half_width, half_height] )
+            # +----+----+
+            # | q1 | q2 |
+            # +----+----+
+            # | q3 | q4 |
+            # +----+----+
+            hw = width // 2
+            hh = height // 2
+            q1 = self._tile_recursive( [x,      y,      hw,       hh] )
+            q2 = self._tile_recursive( [x + hw, y,      width-hw, hh] )
+            q3 = self._tile_recursive( [x,      y + hh, hw,       height-hh] )
+            q4 = self._tile_recursive( [x + hw, y + hh, width-hw, height-hh] )
             return q1 + q2 + q3 + q4
 
 
