@@ -1,8 +1,10 @@
 import os
 import yaml
 import numpy
+import sparse
 
 from tiler import Tiler
+from util import coo2csf
 
 class RunHandler:
 
@@ -103,13 +105,6 @@ class RunHandler:
       for pair in results:
         f.write(str(pair) + "\n")
     print(f"Results saved to {output_path}/results.txt")
-    for idx, pairs in enumerate(self._tile_pairs):
-      tile_path = os.path.join(output_path, "tile_" + str(idx))
-      if not os.path.exists(tile_path):
-        os.makedirs(tile_path, exist_ok=True)
-      for name, tile in pairs.items():
-        numpy.save(os.path.join(tile_path, name), tile)
-        print(f"Tile saved to {tile_path}/{name}.npy")
 
 
   def gen_tiles ( self, results ):
@@ -123,6 +118,34 @@ class RunHandler:
         h = tile_loc_size[3]
         tile = self._tensors[name][x:x+w, y:y+h]
         self._tile_pairs[idx][name] = tile
+
+  def save_tiles( self, output_path ):
+    for idx, pairs in enumerate(self._tile_pairs):
+      tile_path = os.path.join(output_path, "tile_" + str(idx))
+      if not os.path.exists(tile_path):
+        os.makedirs(tile_path, exist_ok=True)
+      for name, tile in pairs.items():
+        numpy.save(os.path.join(tile_path, name), tile)
+        print(f"Tile {name} in numpy format saved to {tile_path}/{name}.npy")
+        tile_coo_sparse = sparse.COO(tile)
+        pos_dict, crd_dict, data = coo2csf(tile_coo_sparse)
+        for dim, seg_array in pos_dict.items():
+          with open(os.path.join(tile_path, "tensor_" + name + "_mode_" + str(dim) + "_seg"), "w") as seg_file:
+            for seg in seg_array:
+              seg_file.write(str(seg))
+              seg_file.write("\n")
+            print(f"Segment data for mode {str(dim)} of tile {name} saved to {seg_file.name}")
+        for dim, crd_array in crd_dict.items():
+          with open(os.path.join(tile_path, "tensor_" + name + "_mode_" + str(dim) + "_crd"), "w") as crd_file:
+            for crd in crd_array:
+              crd_file.write(str(crd))
+              crd_file.write("\n")
+            print(f"Coordinate data for mode {str(dim)} of tile {name} saved to {seg_file.name}")
+        with open(os.path.join(tile_path, "tensor_" + name + "_mode_vals"), "w") as val_file:
+          for val in data:
+            val_file.write(str(val))
+            val_file.write("\n")
+          print(f"Value data of tile {name} saved to {val_file.name}")
 
 
   def launch( self, config_path, tensor_path, output_path ):
@@ -149,8 +172,11 @@ class RunHandler:
     # generate tiles
     self.gen_tiles(results)
 
-    # save the results
+    # save the tiling decision results
     self.save_results(results, output_path)
+
+    # save the generated tiles
+    self.save_tiles( output_path)
 
     return
 
