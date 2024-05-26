@@ -16,7 +16,7 @@ def main():
 
   # default inputs
   default_config_path = "./configs/config_cgra.yaml"
-  default_tensor_path = "./benchmarks/10x10_density0.1"
+  default_tensor_path = "./benchmarks/80x80_density0.1"
   default_output_path = "./output"
 
   # Parse command line

@@ -99,12 +99,12 @@ class RunHandler:
 
 
   def save_results( self, results, output_path ):
+    result_file_name = "results.yaml"
     if not os.path.exists(output_path):
       os.makedirs(output_path, exist_ok=True)
-    with open(os.path.join(output_path, "results.txt"), "w") as f:
-      for pair in results:
-        f.write(str(pair) + "\n")
-    print(f"Results saved to {output_path}/results.txt")
+    with open(os.path.join(output_path, result_file_name), "w") as f:
+      yaml.dump(results, f)
+    print(f"Results saved to {output_path}/{result_file_name}")
 
 
   def gen_tiles ( self, results ):
