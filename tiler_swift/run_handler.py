@@ -2,6 +2,7 @@ import os
 import yaml
 import numpy
 import sparse
+import toml
 
 from tiler import Tiler
 from util import coo2csf
@@ -120,8 +121,12 @@ class RunHandler:
         self._tile_pairs[idx][name] = tile
 
   def save_tiles( self, output_path ):
+    tile_pair_path_list = {}
+    tile_pair_path_list["sam_config"] = {}
+    tile_pair_path_list["sam_config"]["sam_path"] = []
     for idx, pairs in enumerate(self._tile_pairs):
       tile_path = os.path.join(output_path, "tile_" + str(idx))
+      tile_pair_path_list["sam_config"]["sam_path"].append(tile_path)
       if not os.path.exists(tile_path):
         os.makedirs(tile_path, exist_ok=True)
       for name, tile in pairs.items():
@@ -146,6 +151,8 @@ class RunHandler:
             val_file.write(str(val))
             val_file.write("\n")
           print(f"Value data of tile {name} saved to {val_file.name}")
+      with open(os.path.join(output_path, "tile_pair_paths.toml"), "w") as toml_file:
+        toml.dump(tile_pair_path_list, toml_file)
 
 
   def launch( self, config_path, tensor_path, output_path ):
