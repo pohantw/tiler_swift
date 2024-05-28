@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 import yaml
 from scipy.sparse import csr_matrix
@@ -58,26 +59,34 @@ class Visualizer:
             draw.rectangle([x1, y1, x2, y2], outline='red', width=self._border_width)
         
         # Resize the image to 500 pixels wide, maintaining the aspect ratio
-        new_width = 500
-        aspect_ratio = img.height / img.width
-        new_height = int(new_width * aspect_ratio)
-        img_resized = img.resize((new_width, new_height), Image.LANCZOS)
+        # new_width = 500
+        # aspect_ratio = img.height / img.width
+        # new_height = int(new_width * aspect_ratio)
+        # img_resized = img.resize((new_width, new_height), Image.LANCZOS)
 
         # Save the resized image
-        img_resized.save(self._output_img_file)
+        img.save(self._output_img_file)
 
 if __name__ == "__main__":
+  
+    # Parse command line
+    p = argparse.ArgumentParser()
+    p.add_argument( "-r", "--result-path", type=str, default="./output/results.yaml" )
+    p.add_argument( "-t", "--tensor-path", type=str, default="./benchmarks/n4c6-b1" )
+    p.add_argument( "-n", "--tensor-name", type=str, default="A" )
+    p.add_argument( "-o", "--output-path", type=str, default="./output.png" )
+    opts = p.parse_args()
+
     # load the tensor
-    tensor_path = "./benchmarks/80x80_density0.1/A.npy"
-    tensor = np.load(tensor_path)
+    tensor_file = f"{opts.tensor_path}/{opts.tensor_name}.npy"
+    tensor = np.load(tensor_file)
 
     # load the tiling result yaml file
-    tiling_path = "/sim/pohan/tiler_swift/output/results.yaml"
-    with open(tiling_path, 'r') as f:
+    with open(opts.result_path, 'r') as f:
       tiling = yaml.safe_load(f)
 
     # Create a visualizer
-    visualizer = Visualizer(tensor, tiling, './output.png')
+    visualizer = Visualizer(tensor, tiling, opts.output_path)
 
     # Set the border width and dot width
     visualizer.set_border_width(1)

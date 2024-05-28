@@ -38,8 +38,14 @@ class Tiler_Qtree:
             # +----+----+
             # | q3 | q4 |
             # +----+----+
-            hw = width // 2
-            hh = height // 2
+            if width != 1:
+                hw = width // 2
+            else:
+                hw = 1
+            if height != 1:
+                hh = height // 2
+            else:
+                hh = 1
             q1 = self._tile_recursive( [x,      y,      hw,       hh] )
             q2 = self._tile_recursive( [x + hw, y,      width-hw, hh] )
             q3 = self._tile_recursive( [x,      y + hh, hw,       height-hh] )

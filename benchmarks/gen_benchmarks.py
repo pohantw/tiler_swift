@@ -2,6 +2,7 @@ import os
 import numpy
 import shutil
 from scipy.sparse import random
+from scipy.io import mmread
 
 # Seed for the random number generator
 numpy.random.seed(0)
@@ -31,3 +32,27 @@ for matrix_size in matrix_sizes:
         # Save the matrix to a .npy file
         numpy.save(f'{folder}/A.npy', dense_matrixA)
         numpy.save(f'{folder}/B.npy', dense_matrixB)
+
+# Generate matrices from SuiteSparse Matrix Collection
+ss_path = '/intel16/sparse-datasets/suitesparse'
+matrices = [
+    'bcsstm26',
+    'ch7-6-b1',
+    'relat5',
+    'mk9-b1',
+    'rel5',
+    'n4c6-b1'
+]
+
+for m in matrices:
+    matrix_path = os.path.join(ss_path, f'{m}.mtx')
+    matrix = mmread(matrix_path)
+    dense_matrixA = matrix.toarray()
+    dense_matrixB = numpy.roll(dense_matrixA, 5, axis=0)
+    folder = f'{m}'
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+    os.makedirs(folder, exist_ok=True)
+    numpy.save(f'{folder}/A.npy', dense_matrixA)
+    numpy.save(f'{folder}/B.npy', dense_matrixB)
+    
