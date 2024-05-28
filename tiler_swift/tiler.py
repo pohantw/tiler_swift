@@ -1,5 +1,6 @@
 
 from tiler_qtree import Tiler_Qtree
+from tiler_simple import Tiler_Simple
 
 class Tiler:
 
@@ -16,9 +17,10 @@ class Tiler:
 
 
     def tile_simple( self ):
-        results = []
-        results.append( {'A':[0,0,10,10], 'B':[0,0,10,10]} )
-        return results
+        # for now, only support elementwise operations
+        assert self._config['operation'] in ['elementwise-add', 'elementwise-mul']
+        ts = Tiler_Simple( self._config, self._tensors, max_nnzs=15 )
+        return ts.tile()
 
     
     def tile_qtree( self ):
