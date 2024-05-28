@@ -53,7 +53,9 @@ class Tiler_Simple:
             results = self._create_tile_pairs(tw, th)
             all_tiles_fit = self._check_if_all_tiles_fit(results, self._max_nnzs)
             if not all_tiles_fit:
-                tw = tw // 2
-                th = th // 2
+                if tw != 1:
+                    tw = tw // 2
+                if th != 1:
+                    th = th // 2
 
         return results
