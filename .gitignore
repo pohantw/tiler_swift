@@ -37,3 +37,9 @@ venv.bak/
 # outputs
 output/
 outputs/
+
+# image files
+*.png
+
+# benchmark files
+/benchmarks/*/
