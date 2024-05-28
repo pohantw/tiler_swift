@@ -21,7 +21,7 @@ class Tiler_Qtree:
         # TODO: now hard-coded to 50, need to change
         tile_fit_ok = True
         for tensor_name, nnz in nnzs.items():
-            if nnz > 50:
+            if nnz > 15:
                 tile_fit_ok = False
 
         # if the tile fits, return the tile
