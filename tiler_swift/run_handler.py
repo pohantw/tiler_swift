@@ -183,7 +183,7 @@ class RunHandler:
     self.save_results(results, output_path)
 
     # save the generated tiles
-    self.save_tiles( output_path)
+    self.save_tiles(output_path)
 
     return
 
