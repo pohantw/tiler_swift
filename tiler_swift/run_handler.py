@@ -86,8 +86,8 @@ class RunHandler:
         assert len(tensor_tile_info) == 4, "tiling info should have 4 elements"
         assert all(isinstance(v, int) for v in tensor_tile_info), "tiling info should be integers"
         assert tensor_name in self._tensors, f"tensor name {tensor_name} not found in the input tensors"
-        assert tensor_tile_info[2] > 0, "width should be positive"
-        assert tensor_tile_info[3] > 0, "height should be positive"
+        assert tensor_tile_info[2] >= 0, "width should be positive"
+        assert tensor_tile_info[3] >= 0, "height should be positive"
         ulx = tensor_tile_info[0]
         uly = tensor_tile_info[1]
         lrx = tensor_tile_info[0] + tensor_tile_info[2] - 1
