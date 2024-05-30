@@ -126,7 +126,7 @@ class RunHandler:
     tile_pair_path_list["sam_config"]["sam_path"] = []
     for idx, pairs in enumerate(self._tile_pairs):
       tile_path = os.path.join(output_path, "tile_" + str(idx))
-      tile_pair_path_list["sam_config"]["sam_path"].append(tile_path)
+      tile_pair_path_list["sam_config"]["sam_path"].append("tile_" + str(idx))
       if not os.path.exists(tile_path):
         os.makedirs(tile_path, exist_ok=True)
       for name, tile in pairs.items():
