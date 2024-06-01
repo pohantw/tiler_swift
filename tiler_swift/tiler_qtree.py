@@ -7,7 +7,7 @@ class Tiler_Qtree:
         self._tensors = tensors
     
 
-    def _tile_recursive( self, rect ):
+    def _tile_recursive( self, rect, do_merge ):
         x, y, width, height = rect
 
         # loop through tensors, count the non-zeros in the tile
@@ -46,20 +46,25 @@ class Tiler_Qtree:
                 hh = height // 2
             else:
                 hh = 1
-            q1, q1_is_leaf = self._tile_recursive( [x,      y,      hw,       hh] )
-            q2, q2_is_leaf = self._tile_recursive( [x + hw, y,      width-hw, hh] )
-            q3, q3_is_leaf = self._tile_recursive( [x,      y + hh, hw,       height-hh] )
-            q4, q4_is_leaf = self._tile_recursive( [x + hw, y + hh, width-hw, height-hh] )
+            q1, q1_is_leaf = self._tile_recursive( [x,      y,      hw,       hh], do_merge )
+            q2, q2_is_leaf = self._tile_recursive( [x + hw, y,      width-hw, hh], do_merge )
+            q3, q3_is_leaf = self._tile_recursive( [x,      y + hh, hw,       height-hh], do_merge )
+            q4, q4_is_leaf = self._tile_recursive( [x + hw, y + hh, width-hw, height-hh], do_merge )
 
-            q_result = [[q1[0], q2[0]], [q3[0], q4[0]]]
-            q_is_leaf = [[q1_is_leaf, q2_is_leaf], [q3_is_leaf, q4_is_leaf]]
+            if do_merge:
+                q_result = [[q1, q2], [q3, q4]]
+                q_is_leaf = [[q1_is_leaf, q2_is_leaf], [q3_is_leaf, q4_is_leaf]]
+                
+                merged_result = self._merge_tiles(q_result, q_is_leaf)
 
-            merged_result = self._merge_tiles(q_result, q_is_leaf)
+                return merged_result, False
+            else:
+                return q1 + q2 + q3 + q4, False
 
-            return merged_result, False
+            
 
 
-    def _merge_tiles(self, q_result, q_is_leaf):
+    def _merge_tiles( self, q_result, q_is_leaf ):
         # merge the quadrant if the quadrant is a leaf quadrant (no further qtree tiling)
         # and if the two leaf quadrant fit in the memory tile
 
@@ -68,14 +73,14 @@ class Tiler_Qtree:
 
         # try merging horizontally first, the merging tiles have to be leaf tiles
         if q_is_leaf[0][0] and q_is_leaf[0][1]:
-            merge_result = self._try_merge_quadrants([q_result[0][0], q_result[0][1]], 'horizontal')
+            merge_result = self._try_merge_quadrants([q_result[0][0][0], q_result[0][1][0]], 'horizontal')
             if merge_result is not None:
                 merged[0][0] = True
                 merged[0][1] = True
                 quadrants_after_merge.append(merge_result)
         
         if q_is_leaf[1][0] and q_is_leaf[1][1]:
-            merge_result = self._try_merge_quadrants([q_result[1][0], q_result[1][1]], 'horizontal')
+            merge_result = self._try_merge_quadrants([q_result[1][0][0], q_result[1][1][0]], 'horizontal')
             if merge_result is not None:
                 merged[1][0] = True
                 merged[1][1] = True
@@ -83,14 +88,14 @@ class Tiler_Qtree:
 
         # try merging veritcally, the merging tiles have to be leaf tiles and have not been merged horizontally
         if q_is_leaf[0][0] and q_is_leaf[1][0] and not merged[0][0] and not merged[1][0]:
-            merge_result = self._try_merge_quadrants([q_result[0][0], q_result[1][0]], 'vertical')
+            merge_result = self._try_merge_quadrants([q_result[0][0][0], q_result[1][0][0]], 'vertical')
             if merge_result is not None:
                 merged[0][0] = True
                 merged[1][0] = True
                 quadrants_after_merge.append(merge_result)
         
         if q_is_leaf[0][1] and q_is_leaf[1][1] and not merged[0][1] and not merged[1][1]:
-            merge_result = self._try_merge_quadrants([q_result[0][1], q_result[1][1]], 'vertical')
+            merge_result = self._try_merge_quadrants([q_result[0][1][0], q_result[1][1][0]], 'vertical')
             if merge_result is not None:
                 merged[0][1] = True
                 merged[1][1] = True
@@ -100,7 +105,7 @@ class Tiler_Qtree:
         for i in range(2): 
             for j in range(2):
                 if not merged[i][j]:
-                    quadrants_after_merge.append(q_result[i][j])
+                    quadrants_after_merge += q_result[i][j]
 
         return quadrants_after_merge
 
@@ -140,7 +145,7 @@ class Tiler_Qtree:
                             assert(tile_rect[1] == result[tensor_name][1] and tile_rect[3] == result[tensor_name][3])
                             # increment the width to refelct the merge
                             result[tensor_name][2] += tile_rect[2]
-                        else if merge_direction == "vertical":
+                        elif merge_direction == "vertical":
                             # vertically merging tile should have the same width, and have the same x anchor
                             assert(tile_rect[0] == result[tensor_name][0] and tile_rect[2] == result[tensor_name][2])
                             result[tensor_name][3] += tile_rect[3]
@@ -149,9 +154,10 @@ class Tiler_Qtree:
             return None
 
 
-    def tile( self ):
+    def tile( self, do_merge ):
         assert len(self._tensors) == 2, "only support two input tensors"
         tensor_name = list(self._tensors.keys())[0]
         tensor_width = self._tensors[tensor_name].shape[1]
         tensor_height = self._tensors[tensor_name].shape[0]
-        return self._tile_recursive([0, 0, tensor_width, tensor_height])
+        result, _  = self._tile_recursive([0, 0, tensor_width, tensor_height], do_merge)
+        return result

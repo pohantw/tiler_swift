@@ -24,6 +24,9 @@ def main():
   p.add_argument( "-c", "--config-path", type=str, default=default_config_path )
   p.add_argument( "-t", "--tensor-path", type=str, default=default_tensor_path )
   p.add_argument( "-o", "--output-path", type=str, default=default_output_path )
+  p.add_argument( "-m", "--qtree-merge", action='store_true' )
+  p.add_argument( "-v", "--verbose", action='store_true' )
+
   opts = p.parse_args()
 
   # Dispatch
@@ -31,7 +34,8 @@ def main():
   rhandler.launch(
     config_path = opts.config_path,
     tensor_path = opts.tensor_path,
-    output_path = opts.output_path
+    output_path = opts.output_path,
+    options     = opts
   )
 
   return

@@ -120,7 +120,7 @@ class RunHandler:
         tile = self._tensors[name][x:x+w, y:y+h]
         self._tile_pairs[idx][name] = tile
 
-  def save_tiles( self, output_path ):
+  def save_tiles( self, output_path, verbose ):
     tile_pair_path_list = {}
     tile_pair_path_list["sam_config"] = {}
     tile_pair_path_list["sam_config"]["sam_path"] = []
@@ -131,7 +131,8 @@ class RunHandler:
         os.makedirs(tile_path, exist_ok=True)
       for name, tile in pairs.items():
         numpy.save(os.path.join(tile_path, name), tile)
-        print(f"Tile {name} in numpy format saved to {tile_path}/{name}.npy")
+        if verbose:
+          print(f"Tile {name} in numpy format saved to {tile_path}/{name}.npy")
         tile_coo_sparse = sparse.COO(tile)
         pos_dict, crd_dict, data = coo2csf(tile_coo_sparse)
         for dim, seg_array in pos_dict.items():
@@ -139,23 +140,27 @@ class RunHandler:
             for seg in seg_array:
               seg_file.write(str(seg))
               seg_file.write("\n")
-            print(f"Segment data for mode {str(dim)} of tile {name} saved to {seg_file.name}")
+            if verbose:
+              print(f"Segment data for mode {str(dim)} of tile {name} saved to {seg_file.name}")
         for dim, crd_array in crd_dict.items():
           with open(os.path.join(tile_path, "tensor_" + name + "_mode_" + str(dim) + "_crd"), "w") as crd_file:
             for crd in crd_array:
               crd_file.write(str(crd))
               crd_file.write("\n")
-            print(f"Coordinate data for mode {str(dim)} of tile {name} saved to {seg_file.name}")
+            if verbose:
+              print(f"Coordinate data for mode {str(dim)} of tile {name} saved to {seg_file.name}")
         with open(os.path.join(tile_path, "tensor_" + name + "_mode_vals"), "w") as val_file:
           for val in data:
             val_file.write(str(val))
             val_file.write("\n")
-          print(f"Value data of tile {name} saved to {val_file.name}")
+          if verbose:
+            print(f"Value data of tile {name} saved to {val_file.name}")
       with open(os.path.join(output_path, "tile_pair_paths.toml"), "w") as toml_file:
         toml.dump(tile_pair_path_list, toml_file)
+    print(f"Tiles and list of tiles saved to {output_path}")
 
 
-  def launch( self, config_path, tensor_path, output_path ):
+  def launch( self, config_path, tensor_path, output_path, options ):
 
     # welcome!
     self.print_banner()
@@ -171,7 +176,7 @@ class RunHandler:
 
     # Execute the tiler
     tiler = Tiler(config=self._config, tensors=self._tensors)
-    results = tiler.tile()
+    results = tiler.tile(options)
 
     # sanity check
     self.results_sanity_check(results)
@@ -183,7 +188,7 @@ class RunHandler:
     self.save_results(results, output_path)
 
     # save the generated tiles
-    self.save_tiles(output_path)
+    self.save_tiles(output_path, options.verbose )
 
     return
 
