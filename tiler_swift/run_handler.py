@@ -160,7 +160,7 @@ class RunHandler:
     print(f"Tiles and list of tiles saved to {output_path}")
 
 
-  def launch( self, config_path, tensor_path, output_path, options ):
+  def launch( self, config_path, tensor_path, output_path, verbose ):
 
     # welcome!
     self.print_banner()
@@ -176,7 +176,7 @@ class RunHandler:
 
     # Execute the tiler
     tiler = Tiler(config=self._config, tensors=self._tensors)
-    results = tiler.tile(options)
+    results = tiler.tile()
 
     # sanity check
     self.results_sanity_check(results)
@@ -188,7 +188,7 @@ class RunHandler:
     self.save_results(results, output_path)
 
     # save the generated tiles
-    self.save_tiles(output_path, options.verbose )
+    self.save_tiles(output_path, verbose )
 
     return
 

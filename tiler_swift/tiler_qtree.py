@@ -7,7 +7,7 @@ class Tiler_Qtree:
         self._tensors = tensors
     
 
-    def _tile_recursive( self, rect, do_merge ):
+    def _tile_recursive( self, rect ):
         x, y, width, height = rect
 
         # loop through tensors, count the non-zeros in the tile
@@ -46,12 +46,12 @@ class Tiler_Qtree:
                 hh = height // 2
             else:
                 hh = 1
-            q1, q1_is_leaf = self._tile_recursive( [x,      y,      hw,       hh], do_merge )
-            q2, q2_is_leaf = self._tile_recursive( [x + hw, y,      width-hw, hh], do_merge )
-            q3, q3_is_leaf = self._tile_recursive( [x,      y + hh, hw,       height-hh], do_merge )
-            q4, q4_is_leaf = self._tile_recursive( [x + hw, y + hh, width-hw, height-hh], do_merge )
+            q1, q1_is_leaf = self._tile_recursive( [x,      y,      hw,       hh] )
+            q2, q2_is_leaf = self._tile_recursive( [x + hw, y,      width-hw, hh] )
+            q3, q3_is_leaf = self._tile_recursive( [x,      y + hh, hw,       height-hh] )
+            q4, q4_is_leaf = self._tile_recursive( [x + hw, y + hh, width-hw, height-hh] )
 
-            if do_merge:
+            if self._config["qtree_tile_merging"]:
                 q_result = [[q1, q2], [q3, q4]]
                 q_is_leaf = [[q1_is_leaf, q2_is_leaf], [q3_is_leaf, q4_is_leaf]]
                 
@@ -154,10 +154,10 @@ class Tiler_Qtree:
             return None
 
 
-    def tile( self, do_merge ):
+    def tile( self ):
         assert len(self._tensors) == 2, "only support two input tensors"
         tensor_name = list(self._tensors.keys())[0]
         tensor_width = self._tensors[tensor_name].shape[1]
         tensor_height = self._tensors[tensor_name].shape[0]
-        result, _  = self._tile_recursive([0, 0, tensor_width, tensor_height], do_merge)
+        result, _  = self._tile_recursive([0, 0, tensor_width, tensor_height])
         return result
