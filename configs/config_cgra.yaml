@@ -4,6 +4,7 @@ memory_capacity_mtile: 4
 
 # tool configuration
 tiling_algorithm: "qtree"
+qtree_tile_merging: True
 performance_model: "opal"
 
 # operation
