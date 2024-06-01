@@ -34,7 +34,7 @@ def main():
     config_path = opts.config_path,
     tensor_path = opts.tensor_path,
     output_path = opts.output_path,
-    verbose     =opts.verbose
+    verbose     = opts.verbose
   )
 
   return
