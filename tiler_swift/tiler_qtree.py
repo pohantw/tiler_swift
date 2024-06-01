@@ -127,6 +127,7 @@ class Tiler_Qtree:
                 nnz[tensor_name] += numpy.count_nonzero(tiled_tensor)
 
         # check if the combined quadrant fits in the memory tile
+        # TODO: Po-Han please replace this with the performance model
         fit_ok = True
         for tensor_name, nnz in nnz.items():
             if nnz > 15:
