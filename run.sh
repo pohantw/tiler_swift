@@ -5,8 +5,8 @@ configs=(
     cgra_elemadd_qtree
     cgra_elemadd_btree
     # cgra_elemmul_simple
-    cgra_elemmul_qtree
-    cgra_elemmul_btree
+    # cgra_elemmul_qtree
+    # cgra_elemmul_btree
 )
 
 benchmarks=(
@@ -20,7 +20,8 @@ benchmarks=(
     rel5
 )
 
-output_root=./outputs
+proj_root=$(pwd)
+output_root=outputs
 
 # loop through each benchmark
 for config in "${configs[@]}"
@@ -51,7 +52,11 @@ do
             | tee ${output_path}/log_visualize.log
         
         # Run Comal
-
-        
+        cd tests/comal
+        cargo run \
+            --bin tiler_swift_mat_elemadd \
+            ${proj_root}/${output_path}/tiles/tile_pair_paths.toml \
+            | tee ${proj_root}/${output_path}/log_comal.log
+        cd ${proj_root}
     done
 done
