@@ -8,8 +8,8 @@ from scipy.io import mmread
 numpy.random.seed(0)
 
 # Dimensions of the matrices
-matrix_sizes = [10, 20, 40, 80, 160]
-densities = [0.1, 0.2, 0.4, 0.8, 1.0]
+matrix_sizes = [80, 160, 320]
+densities = [0.1, 0.2, 0.4]
 
 # Generate matrices
 for matrix_size in matrix_sizes:
@@ -34,7 +34,7 @@ for matrix_size in matrix_sizes:
         numpy.save(f'{folder}/B.npy', dense_matrixB)
 
 # Generate matrices from SuiteSparse Matrix Collection
-ss_path = '/intel16/sparse-datasets/suitesparse'
+ss_path = '/home/pohan/workspace/sparse-datasets/suitesparse'
 matrices = [
     'bcsstm26',
     'ch7-6-b1',
