@@ -24,8 +24,10 @@ class Model_Opal:
             output_nnzs += numpy.count_nonzero( tensor[y:y+height, x:x+width] )
         if output_nnzs > self._out_mem_size:
             # we use negative value to indicate that the tiling is infeasible
+            print(f"[Model_Opal] output_nnzs({output_nnzs}) > out_mem_size({self._out_mem_size})")
             return -1
         else:
+            print(f"[Model_Opal] output_nnzs({output_nnzs}) fits")
             return self._config['tile_overhead'] + output_nnzs
         
         
@@ -43,8 +45,10 @@ class Model_Opal:
                                numpy.count_nonzero( tensor[y:y+height, x:x+width] ) )
         if output_nnzs > self._out_mem_size:
             # we use negative value to indicate that the tiling is infeasible
+            print(f"[Model_Opal] output_nnzs({output_nnzs}) > out_mem_size({self._out_mem_size})")
             return -1
         else:
+            print(f"[Model_Opal] output_nnzs({output_nnzs}) fits")
             return self._config['tile_overhead'] + output_nnzs
 
 
