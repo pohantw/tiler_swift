@@ -2,10 +2,20 @@
 memory_capacity_glb: 128
 memory_capacity_mtile: 4
 
+# element size (byte)
+element_size: 2
+
 # tool configuration
 tiling_algorithm: "qtree"
 qtree_tile_merging: True
 performance_model: "opal"
+
+# tiling overhead
+# unit: per nnz process time
+# ex: tile_overhead = 5 means:
+# to setup a tile, it takes the same
+# amount of time processing 5 nnzs
+tile_overhead: 5
 
 # operation
 operation: "elementwise-add"
