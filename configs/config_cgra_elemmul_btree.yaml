@@ -7,7 +7,7 @@ element_size: 2
 
 # tool configuration
 tiling_algorithm: "btree"
-qtree_tile_merging: True
+qtree_tile_merging: False
 performance_model: "opal"
 
 # tiling overhead

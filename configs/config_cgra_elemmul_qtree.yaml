@@ -6,7 +6,7 @@ memory_capacity_mtile: 0.5
 element_size: 2
 
 # tool configuration
-tiling_algorithm: "btree"
+tiling_algorithm: "qtree"
 qtree_tile_merging: True
 performance_model: "opal"
 
