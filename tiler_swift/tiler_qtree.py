@@ -2,9 +2,10 @@ import numpy
 
 class Tiler_Qtree:
 
-    def __init__( self, config, tensors ):
+    def __init__( self, config, tensors, model ):
         self._config = config
         self._tensors = tensors
+        self._model = model
     
 
     def _tile_recursive( self, rect ):
