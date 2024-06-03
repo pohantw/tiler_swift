@@ -2,22 +2,22 @@
 
 configs=(
     # cgra_elemadd_simple
-    cgra_elemadd_qtree
-    cgra_elemadd_btree
+    # cgra_elemadd_qtree
+    # cgra_elemadd_btree
     # cgra_elemmul_simple
-    # cgra_elemmul_qtree
-    # cgra_elemmul_btree
+    cgra_elemmul_qtree
+    cgra_elemmul_btree
 )
 
 benchmarks=(
     160x160_density0.1
-    160x160_density0.2
-    bcsstm26
-    ch7-6-b1
-    mk9-b1
-    n4c6-b1
-    relat5
-    rel5
+    # 160x160_density0.2
+    # bcsstm26
+    # ch7-6-b1
+    # mk9-b1
+    # n4c6-b1
+    # relat5
+    # rel5
 )
 
 proj_root=$(pwd)
@@ -51,10 +51,13 @@ do
             -o ${output_path}/tiling_visualization.png \
             | tee ${output_path}/log_visualize.log
         
+        # get the operation type from the config file name
+        IFS="_" read -ra split_config <<< "${config}"
+
         # Run Comal
         cd tests/comal
         cargo run \
-            --bin tiler_swift_mat_elemadd \
+            --bin tiler_swift_mat_${split_config[1]} \
             ${proj_root}/${output_path}/tiles/tile_pair_paths.toml \
             | tee ${proj_root}/${output_path}/log_comal.log
         cd ${proj_root}
