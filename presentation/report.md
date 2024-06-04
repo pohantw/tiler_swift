@@ -37,6 +37,15 @@ Please describe your approach.  Please be brief (about a page or so max), but yo
 
 <!--
 
+    Additional questions that Kayvon & TAs want us to address
+
+    * do more complex perf model, does that help with tiling results? how does it scale
+    * does complex searching algorithm actually give you better results? can I just run brute force overnight, and it gives you best results?
+-->
+
+
+<!--
+
 (as many pages as needed to make the points you want to make)
 
 To the staff, this is the most important part of the writeup. Begin by providing your own definition of success (this should be in terms of your goals). In other words, re-iterate the question you were trying to answer, or the performance boost you were hoping to obtain. Then describe what data/experiment needs to be run to provide evidence that the goals were either met or not met.
