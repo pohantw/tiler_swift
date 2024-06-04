@@ -64,6 +64,16 @@ As you answer these questions, provide data and measurements to support your con
 Please provide a [very short] breakdown of which parts of the project were performed by each team member. In general we hope to (and intend to) give all team members the same grade, but we still want to know what everyone worked on and what their role was.   
 -->
 
+Both team members equally contributed to this project.
+* Po-Han Chen (50%)
+    * Software framework
+    * Baseline searching algorithms and performance models
+    * Result visualization
+* Bo Wun Cheng (50%)
+    * Integration with cycle accurate simulator [3]
+    * Optimizating searching algorithms
+    * Result collection and evaluation
+
 # References
 [1] K. Koul, et. al, "AHA: An Agile Approach to the Design of Coarse-Grained Reconfigurable Accelerators and Compilers," in ACM Transactions on Embedded Computing Systems (TECS), April 2022 (https://dl.acm.org/doi/full/10.1145/3534933)
 
