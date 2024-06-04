@@ -2,9 +2,10 @@ import numpy
 
 class Tiler_Qtree:
 
-    def __init__( self, config, tensors ):
+    def __init__( self, config, tensors, model ):
         self._config = config
         self._tensors = tensors
+        self._model = model
     
 
     def _tile_recursive( self, rect ):
@@ -19,10 +20,8 @@ class Tiler_Qtree:
         # check if the tile fits in the memory tile
         # TODO: also need to check output
         # TODO: now hard-coded to 50, need to change
-        tile_fit_ok = True
-        for tensor_name, nnz in nnzs.items():
-            if nnz > 15:
-                tile_fit_ok = False
+        tile_runtime = self._model.estimate_tile_runtime( rect )
+        tile_fit_ok = tile_runtime >= 0
 
         # if the tile fits, return the tile
         # otherwise, recursively split the tile
@@ -118,20 +117,27 @@ class Tiler_Qtree:
 
         # first count the nnzs in the quadrants we are trying to merge 
         nnz = {}
-        for quadrant in quadrant_info:
+        merged_x = 0
+        merged_y = 0
+        merged_width = 0
+        merged_height = 0
+        for idx, quadrant in enumerate(quadrant_info):
             for tensor_name, tile_rect in quadrant.items():
                 x, y, width, height = tile_rect
-                tiled_tensor = self._tensors[tensor_name][y:y+height, x:x+width]
-                if tensor_name not in nnz:
-                    nnz[tensor_name] = 0
-                nnz[tensor_name] += numpy.count_nonzero(tiled_tensor)
+                if idx == 0:
+                    merged_x = x
+                    merged_y = y
+                if merged_height == "horizontal":
+                    assert(y == merged_y and height == merged_height)
+                    merged_width += width
+                elif merged_height == "vertical":
+                    assert(x == merged_x and width == merged_width)
+                    merged_height += height
 
         # check if the combined quadrant fits in the memory tile
         # TODO: Po-Han please replace this with the performance model
-        fit_ok = True
-        for tensor_name, nnz in nnz.items():
-            if nnz > 15:
-                fit_ok = False
+        tile_runtime = self._model.estimate_tile_runtime( [merged_x, merged_y, merged_width, merged_height] )
+        fit_ok = tile_runtime >= 0
         
         # combine the quadrant if it fits
         if fit_ok:

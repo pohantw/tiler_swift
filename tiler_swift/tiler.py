@@ -21,14 +21,14 @@ class Tiler:
     def tile_simple( self ):
         # for now, only support elementwise operations
         assert self._config['operation'] in ['elementwise-add', 'elementwise-mul']
-        ts = Tiler_Simple( self._config, self._tensors, max_nnzs=15 )
+        ts = Tiler_Simple( self._config, self._tensors, max_nnzs=128 )
         return ts.tile()
 
     
-    def tile_qtree( self ):
+    def tile_qtree( self, model ):
         # for now, only support elementwise operations
         assert self._config['operation'] in ['elementwise-add', 'elementwise-mul']
-        tq = Tiler_Qtree( self._config, self._tensors )
+        tq = Tiler_Qtree( self._config, self._tensors, model )
         return tq.tile()
 
 
@@ -58,7 +58,7 @@ class Tiler:
         elif self._config['tiling_algorithm'] == "simple":
             return self.tile_simple()
         elif self._config['tiling_algorithm'] == "qtree":
-            return self.tile_qtree()
+            return self.tile_qtree(model)
         elif self._config['tiling_algorithm'] == "btree":
             return self.tile_btree(model)
         elif self._config['tiling_algorithm'] == "dynamic_reflexive":
