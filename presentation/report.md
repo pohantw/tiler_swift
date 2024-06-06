@@ -6,15 +6,21 @@ Tiler-Swift is an efficient tiling software to speed up sparse tensor operations
 
 Specialized hardware has limited memory, so input data, often in the form of tensors, must be split into smaller segments called tiles. Usually, these tiles are of equal size to fit into memory efficiently. However, this method doesn't work well with sparse data, where some tiles have many zeros and others have many non-zero values. After compressing sparse data, tiles of the same initial size may end up with different storage sizes. To better use the hardware memory, we can use larger tiles that cover more of the input tensor, reducing the number of tiles needed.
 
-![Sparse Tiling](./img/sparse-tiling.png)
+<p align="center">
+    <img src="./img/sparse-tiling.png" width="60%">
+</p>
 
 To make Tiler-Swift work, it looks at three things. First, it checks how many zeros are in the input data. Second, it figures out what's being done to the data, so it can predict how much space it will need in the ouptut. Lastly, it needs to know about the computer's memory limits. These three things help Tiler-Swift decide how to split up the data into tiles. The result is a tiled picture based on these factors.
 
-![Tool IO](./img/tool-io.png)
+<p align="center">
+    <img src="./img/tool-io.png" width="60%">
+</p>
 
 The tool has two main parts: the tiler and a performance model. They work together in a loop to find the best tiling that fits the given limits. The challenge is to work out how the tiling search algorithm operates, how the model predicts performance, and how they exchange information with each other.
 
-![Tiler and Model](./img/tiler-model.png)
+<p align="center">
+    <img src="./img/tiler-model.png" width="60%">
+</p>
 
 # Approach
 
