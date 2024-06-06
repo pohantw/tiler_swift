@@ -21,7 +21,9 @@ class Tiler_Qtree:
         # TODO: also need to check output
         # TODO: now hard-coded to 50, need to change
         tile_runtime = self._model.estimate_tile_runtime( rect )
-        tile_fit_ok = tile_runtime >= 0
+        tile_fit_ok = True
+        if tile_runtime == -1:
+            tile_fit_ok = False
 
         # if the tile fits, return the tile
         # otherwise, recursively split the tile

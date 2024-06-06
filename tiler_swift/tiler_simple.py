@@ -2,10 +2,10 @@ import numpy
 
 class Tiler_Simple:
 
-    def __init__( self, config, tensors, max_nnzs ):
+    def __init__( self, config, tensors, model ):
         self._config = config
         self._tensors = tensors
-        self._max_nnzs = max_nnzs
+        self._model = model
     
     def _create_tile_pairs( self, tile_width, tile_height ):
         results = []
@@ -25,20 +25,15 @@ class Tiler_Simple:
                 results.append(result)
         return results
     
-    def _check_if_all_tiles_fit( self, results, max_nnzs ):
+    def _check_if_all_tiles_fit( self, results ):
+        fit_ok = True
         for result in results:
-            nnzs = {}
             for tensor_name, tensor in self._tensors.items():
-                x_start = result[tensor_name][0]
-                y_start = result[tensor_name][1]
-                x_end = result[tensor_name][0] + result[tensor_name][2]
-                y_end = result[tensor_name][1] + result[tensor_name][3]
-                tiled_tensor = tensor[y_start:y_end, x_start:x_end]
-                nnzs[tensor_name] = numpy.count_nonzero(tiled_tensor)
-            for tensor_name, nnz in nnzs.items():
-                if nnz > max_nnzs:
-                    return False
-        return True
+                x, y, w, h = result[tensor_name]
+                tile_runtime = self._model._estimate_tile_runtime_elemadd([x, y, w, h])
+                if tile_runtime == -1:
+                    fit_ok = False
+        return fit_ok
 
     def tile( self ):
         assert len(self._tensors) == 2, "only support two input tensors"
@@ -51,7 +46,7 @@ class Tiler_Simple:
         th = tensor_height
         while not all_tiles_fit:
             results = self._create_tile_pairs(tw, th)
-            all_tiles_fit = self._check_if_all_tiles_fit(results, self._max_nnzs)
+            all_tiles_fit = self._check_if_all_tiles_fit(results)
             if not all_tiles_fit:
                 if tw != 1:
                     tw = tw // 2

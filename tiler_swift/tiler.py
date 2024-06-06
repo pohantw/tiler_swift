@@ -18,10 +18,10 @@ class Tiler:
         return results
 
 
-    def tile_simple( self ):
+    def tile_simple( self, model ):
         # for now, only support elementwise operations
         assert self._config['operation'] in ['elementwise-add', 'elementwise-mul']
-        ts = Tiler_Simple( self._config, self._tensors, max_nnzs=128 )
+        ts = Tiler_Simple( self._config, self._tensors, model )
         return ts.tile()
 
     
@@ -56,7 +56,7 @@ class Tiler:
         if self._config['tiling_algorithm'] == "test":
             return self.tile_test()
         elif self._config['tiling_algorithm'] == "simple":
-            return self.tile_simple()
+            return self.tile_simple(model)
         elif self._config['tiling_algorithm'] == "qtree":
             return self.tile_qtree(model)
         elif self._config['tiling_algorithm'] == "btree":
