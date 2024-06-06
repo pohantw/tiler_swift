@@ -33,6 +33,20 @@ Please describe your approach.  Please be brief (about a page or so max), but yo
 
 # Evaluation and Results
 
+## Hypothesis and Expectation
+
+Before evaluating the proposed method, we present the list of key factors that would lead performance benefit and how Tiler-Swift can improve the overall hardware runtime by improving these factors. 
+
+The first factor to improving the application runtime of our CGRA is by reducing reconfiguration time. Being a reconfigurable dataflow architecture, our CGRA needs to be reconfigured before every kernel(tile) execution to carry out the computation specified by the user. In other word, for every tile we run on the CGRA, a configuration time overhead is incurred. The goal of Tiler-Swift is to reduce the number of tiles by packing more nonzeros into data tiles.  As a result, the number tiles and the number of reconfiguration required to produced the final matrix is reudced, alleviating the reconfiguration overhead.
+
+The second key factor is the reduction of the pipeline ramp-up and ramp-down time. Our CGRA implements a fully pipelined dataflow architecture by inserting hardware queues between processing elements to allow for overlapping of execution time. However, at the begining of each tile computation, the pipeline hardware queues would need to filled completely to achieve peak performance. Similarly, at the end of each tile, the pipeline queues are drained and the hardware no longer achieves peak pipelining performance. Tiler-Swift is able to mitigate excessive ramp-up and ramp-down overhead by reducing the total number of tiles and packing more data in each tile. By doing so, the tiles produced by the proposed method is able to keep the pipelining queues full for a longer period of time, achieving better overall performance.
+
+The final key factor is the improved data reuse. For applications the exhitibit data reuse (e.g., matrix multiplication), a single piece of data is computed on multiple times before the results is produced. Through packing more data into a single tile, tiler-swift is able to improve the number of computations performed for each memory access, improving execution time.
+
+## Evaluation Mehtodology
+
+In our evaluation results, we simulate our CGRA using comal [3], a cycle accurate simulator that models the functionality and execution time of the dataflow architecture. Since reconfiguration time is not simulated in comal, we report the total confuguration time by muliplying the total number of kernels with the per-kernel configuration time obtained from the register transfer level (RTL) simulation of our hardware. The proposed method is evaluated using 5 selected sparse matrices from the SuiteSparse [] dataset
+
 <!--
 
     Additional questions that Kayvon & TAs want us to address
@@ -88,4 +102,5 @@ Both team members equally contributed to this project.
 
 [3] R. Lacouture, et. al, "comal" (https://github.com/stanford-ppl/comal)
 
-[4] T. O. Odemuyiwa, et. at, "Accelerating Sparse Data Orchestration via Dynamic Reflexive Tiling," in International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS), March 2023 (https://dl.acm.org/doi/10.1145/3582016.3582064)
+[4] T. Davis, et. al, "The university of Florida sparse matrix collection," in ACM Transactions on Mathematical Software, December 2011 (https://doi.org/10.1145/2049662.2049663)
+
