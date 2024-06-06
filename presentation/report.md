@@ -31,7 +31,7 @@ Please describe your approach.  Please be brief (about a page or so max), but yo
 * __If your project involved started with an existing piece of code or DNN model, please clearly describe what you started with here, so it's clear what work you actually did in your project. e.g., "We started with this codebase and made these changes..."__
 -->
 
-# Evaluation and Results
+# Evaluation
 
 ## Hypothesis and Expectation
 
@@ -45,7 +45,18 @@ The final key factor is the improved data reuse. For applications the exhitibit 
 
 ## Evaluation Mehtodology
 
-In our evaluation results, we simulate our CGRA using comal [3], a cycle accurate simulator that models the functionality and execution time of the dataflow architecture. Since reconfiguration time is not simulated in comal, we report the total confuguration time by muliplying the total number of kernels with the per-kernel configuration time obtained from the register transfer level (RTL) simulation of our hardware. The proposed method is evaluated using 5 selected sparse matrices from the SuiteSparse [] dataset
+In our evaluation results, we simulate our CGRA using comal [3], a cycle accurate simulator that models the functionality and execution time of the dataflow architecture. Since reconfiguration time is not simulated in comal, we report the total confuguration time by muliplying the total number of kernels with the per-kernel configuration time obtained from the register transfer level (RTL) simulation of our hardware. The proposed method is evaluated using 5 selected sparse matrices from the SuiteSparse [4] dataset, and the sparse tensor operations evluated are matrix element-wise addition and matrix element-wise multiplication.
+
+## Evaluation Results
+
+![Element-Wise Addition Runtime](./img/elemadd_runtime.png)
+
+The figure above compares the CGRA runtime () performing element-wise addtion between tiles produced by the simple, qtree, and btree tiler across different input data. Please note that the reported runtime only includes the execution time and does not take configuration time into account. It is demonstrated adopting the qtree and btree tiler, mean speedup of 2.97X and 2.62X can be achieved. Since the element-wise addition operation does not exhibit any data reuse, the perforamnce shown is through the improved pipelining resulting from bigger tiles.Through packing more data into each tiles, the tiles produced by qtree and btree are able to keep the pipeline full for a longer period of time compared to the simple tiler, resulting in higher pipelining throughput and shorter runtime.
+
+
+![Element-Wise Multiplication Runtime](./img/elemmul_runtime.png)
+
+
 
 <!--
 
