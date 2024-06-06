@@ -45,22 +45,35 @@ The final key factor is the improved data reuse. For applications the exhitibit 
 
 ## Evaluation Mehtodology
 
-In our evaluation results, we simulate our CGRA using comal [3], a cycle accurate simulator that models the functionality and execution time of the dataflow architecture. Since reconfiguration time is not simulated in comal, we report the total confuguration time by muliplying the total number of kernels with the per-kernel configuration time obtained from the register transfer level (RTL) simulation of our hardware. The proposed method is evaluated using 5 selected sparse matrices from the SuiteSparse [4] dataset, and the sparse tensor operations evluated are matrix element-wise addition and matrix element-wise multiplication.
+In our evaluation results, we simulate our CGRA using comal [3], a cycle accurate simulator that models the functionality and execution time of the dataflow architecture. Since reconfiguration time is not simulated in comal, we report the total confuguration time by muliplying the total number of kernels with the per-kernel configuration time, which is fixed for the same sparse tensor operation, obtained from the register transfer level (RTL) simulation of our hardware. The proposed method is evaluated using 5 selected sparse matrices from the SuiteSparse [4] dataset, and the sparse tensor operations evluated are matrix element-wise addition and matrix element-wise multiplication.
 
 ## Evaluation Results
 
+### Execution Time Comparison 
+
 ![Element-Wise Addition Runtime](./img/elemadd_runtime.png)
 
-The figure above compares the CGRA runtime performing element-wise addtion between tiles produced by the simple, qtree, and btree tiler across different input data. It is demonstrated adopting the qtree and btree tiler, mean speedup of 2.97X and 2.62X can be achieved.
+The figure above compares the CGRA execution time performing element-wise addtion between tiles produced by the simple, qtree, and btree tiler across different input data. It is demonstrated adopting the qtree and btree tiler, mean speedup of 2.97X and 2.62X can be achieved.
 
 ![Element-Wise Multiplication Runtime](./img/elemmul_runtime.png)
 
 The figure above present the element-wise multiplication execution time comparison between tiles from different tilers. Thanks to the intersecting nature of the multiplication operation, the model is less conservative and more aggressive tiling decision can be made by the proposed tilers. As a result, the qtree and btree tiling algorithm demonstrate mean speedup of 3.89X and 3.75X over the simple tiler, respectively.
 
-Neither the element-wise addition operation nor the elemen-wise multiplication operation exhibit any data reuse. Furthermore, the results shown above only account for the execution time and not the configuration time. Therefore, the perforamnce improvement demonstarted in these two experiements solely comes from the improved pipelining resulting from bigger tiles. Through packing more data into each tiles, the tiles produced by qtree and btree are able to keep the pipeline full for a longer period of time compared to the simple tiler, resulting in higher pipelining throughput and shorter runtime.
+Neither the element-wise addition operation nor the elemen-wise multiplication operation exhibit any data reuse. Furthermore, the results shown above only account for the execution time and not the configuration time. Therefore, the perforamnce improvement demonstarted in these two experiements solely comes from the improved pipelining resulting from bigger tiles (the second key factor). Through packing more data into each tiles, the tiles produced by qtree and btree are able to keep the pipeline full for a longer period of time compared to the simple tiler, resulting in higher pipelining throughput and shorter runtime.
 
+### Configuration Time Comparison 
 
+![Element-Wise Addition Configuration Time](./img/elemadd_config_time.png)
 
+The figure above presents the comparison of the total configuration time spent on configuring the CGRA to execute all the tiles produced by the simple, the qtree, and the btree tiler. On average, the qtree and btree tiling alorithms incurred 80.89% and 76.82% less configuration time compared to the simple tiler, respectively.
+
+![Element-Wise Multiplication Configuration Time](./img/elemmul_config_time.png)
+
+Similarly, the tiles produced by qtree and btree tiler also demonstrate significant reduction in configuration time compared to that produced by the simple tiler. As illustrated in the figure above, we observe reductions of 89.98% and 89.91% in configuration for tiles from the qtree tiling and the btree tiling algorithm respectively.
+
+The above two experiemental results demonstrate that the qtree and btree tiling algorithm is effective in packing more data into tiles, resulting in overall less data tiles at the end. This translate into lower configuration time overhead when we run the tiles on our CGRA, leading to higher performance (the first key factor)
+
+Unfortunately, due to time constraint, we were unable to finish implementing the code that perform tiling for applications with memory reuse (such as matrix multiplication). Therefore, we are unable to show concrete results of how Tiler-Swift further push the performance boundary by addressing the third key performance factor. 
 <!--
 
     Additional questions that Kayvon & TAs want us to address
