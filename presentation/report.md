@@ -41,25 +41,10 @@ Similar to the quad-tree search, but instead of dividing them into four quadrant
 ### Tile Merging
 The three tiling algorithms can produce tiles with few non-zero elements due to uneven distribution of non-zeros in the tensor. For example, if non-zeros cluster in one corner, the algorithms will create dense tiles there and sparse tiles elsewhere. Merging these sparse tiles back into larger ones can improve efficiency. Our evaluation shows that applying tile merging to the quad-tree algorithm results in performance that is comparable to or better than the binary-tree method.
 
-
 ## Performance Model
-1. Runtime Estimation
-2. how to estimate output non-zeros
+The performance model aims to estimate the runtime of a given tiled tensor for a target operation, guiding the next iteration of the tiling process. Currently, we support only element-wise operations such as addition and multiplication, and use the number of output non-zeros as an indicator for runtime, assuming each output non-zero requires the same processing time. To expedite estimation and ensure tiling functionality, we use worst-case scenarios for our calculations. For element-wise addition, we assume no overlap among input non-zeros, making the output non-zeros equal to the total sum of input non-zeros. For element-wise multiplication, we assume complete overlap among input non-zeros, resulting in the number of output non-zeros being the maximum count from the input tensors.
 
-## 
-
-<!--
-
-(approx 1-2 pages max)
-
-Please describe your approach.  Please be brief (about a page or so max), but your description should be sufficiently detailed to provide the course staff a basic understanding of your approach. It might be very useful to include a figure here illustrating components of the system and/or their mapping to parallel hardware/or a DNN architecture.
-
-* If your project involved optimizing code. Please describe the process of how you iterated toward a solution (what measurements did you make) What did you try that did not work? How to parts of the problem map to cores, threads, or vector lanes?
-
-* If your project involved optimizing a DNN architecture, you could describe the architecture here, and be sure to provide intuition about how your model architecture choices were motivated by your goals.
-
-* __If your project involved started with an existing piece of code or DNN model, please clearly describe what you started with here, so it's clear what work you actually did in your project. e.g., "We started with this codebase and made these changes..."__
--->
+For other more complex tensor operations such as matrix multiplication, the performance model needs to change and is listed in the future work section.
 
 # Evaluation and Results
 
