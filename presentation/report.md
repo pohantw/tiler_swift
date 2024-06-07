@@ -35,17 +35,17 @@ Please describe your approach.  Please be brief (about a page or so max), but yo
 
 ## Hypothesis and Expectation
 
-Before evaluating the proposed method, we present the list of key factors that would lead performance benefit and how Tiler-Swift can improve the overall hardware runtime by improving these factors. 
+Before evaluating the proposed method, we present the list of key factors that would lead to performance benefits and how Tiler-Swift can improve the overall hardware runtime by improving these factors. 
 
-The first factor to improving the application runtime of our CGRA is by reducing reconfiguration time. Being a reconfigurable dataflow architecture, our CGRA needs to be reconfigured before every kernel(tile) execution to carry out the computation specified by the user. In other word, for every tile we run on the CGRA, a configuration time overhead is incurred. The goal of Tiler-Swift is to reduce the number of tiles by packing more nonzeros into data tiles.  As a result, the number tiles and the number of reconfiguration required to produced the final matrix is reudced, alleviating the reconfiguration overhead.
+The first factor in improving the application runtime of our CGRA is reducing reconfiguration time. Being a reconfigurable dataflow architecture, our CGRA must be reconfigured before every kernel(tile) execution to carry out the computation specified by the user. In other words, for every tile we run on the CGRA, a configuration time overhead is incurred. The goal of Tiler-Swift is to reduce the number of tiles by packing more nonzeros into data tiles.  As a result, the number of tiles and the number of reconfigurations required to produce the final matrix is reduced, alleviating the reconfiguration overhead.
 
-The second key factor is the ability of the tile to keep the pipeline full. Our CGRA implements a fully pipelined dataflow architecture by inserting hardware queues between processing elements to allow for overlapping of execution time. However, at the begining of each tile computation, the pipeline hardware queues would need to filled completely to achieve peak performance (ramp-up time). Similarly, at the end of each tile, the pipeline queues are drained and the hardware no longer achieves peak pipelining performance (ramp-down time). Tiler-Swift is able to mitigate excessive ramp-up and ramp-down overhead by reducing the total number of tiles and packing more data in each tile. By doing so, the tiles produced by the proposed method is able to keep the pipelining queues full for a longer period of time, achieving better overall performance.
+The second key factor is the ability of the tile to keep the pipeline full. Our CGRA implements a fully pipelined dataflow architecture by inserting hardware queues between processing elements to allow for overlapped execution. However, at the start of each tile computation, the pipeline hardware queues would need to be filled to achieve peak performance (ramp-up time). Similarly, at the end of each tile, the pipeline queues are drained and the hardware no longer achieves peak pipelining performance (ramp-down time). Tiler-Swift can mitigate excessive ramp-up and ramp-down overhead by reducing the total number of tiles and packing more data in each tile. By doing so, the tiles produced by the proposed method can keep the pipelining queues full for a longer period, achieving better overall performance.
 
-The final key factor is the improved data reuse. For applications the exhitibit data reuse (e.g., matrix multiplication), a single piece of data is computed on multiple times before the results is produced. Through packing more data into a single tile, tiler-swift is able to improve the number of computations performed for each memory access, improving execution time.
+The final key factor is the improved data reuse. For applications that exhibit data reuse (e.g., matrix multiplication), a single piece of data is computed multiple times before the results are produced. Through packing more data into a single tile, tiler-swift can improve the number of computations performed for each memory access, improving execution time.
 
 ## Evaluation Mehtodology
 
-In our evaluation results, we simulate our CGRA using comal [3], a cycle accurate simulator that models the functionality and execution time of the dataflow architecture. Since reconfiguration time is not simulated in comal, we report the total confuguration time by muliplying the total number of kernels with the per-kernel configuration time, which is fixed for the same sparse tensor operation, obtained from the register transfer level (RTL) simulation of our hardware. The proposed method is evaluated using 5 selected sparse matrices from the SuiteSparse [4] dataset, and the sparse tensor operations evluated are matrix element-wise addition and matrix element-wise multiplication.
+In our evaluation results, we simulate our CGRA using comal [3], a cycle-accurate simulator that models the functionality and execution time of the dataflow architecture. Since reconfiguration time is not simulated in comal, we report the total configuration time by multiplying the total number of kernels with the per-kernel configuration time, which is fixed for the same sparse tensor operation, obtained from the register transfer level (RTL) simulation of our hardware. The proposed method is evaluated using 5 selected sparse matrices from the SuiteSparse [4] dataset, and the sparse tensor operations evaluated are matrix element-wise addition and matrix element-wise multiplication.
 
 ## Evaluation Results
 
@@ -53,27 +53,27 @@ In our evaluation results, we simulate our CGRA using comal [3], a cycle accurat
 
 ![Element-Wise Addition Runtime](./img/elemadd_runtime.png)
 
-The figure above compares the CGRA execution time performing element-wise addtion between tiles produced by the simple, qtree, and btree tiler across different input data. It is demonstrated adopting the qtree and btree tiler, mean speedup of 2.97X and 2.62X can be achieved.
+The figure above compares the CGRA execution time performing element-wise addition between tiles produced by the simple, qtree, and btree tiler across different input data. It is demonstrated adopting the qtree and btree tiler, a mean speedup of 2.97X and 2.62X can be achieved.
 
 ![Element-Wise Multiplication Runtime](./img/elemmul_runtime.png)
 
-The figure above present the element-wise multiplication execution time comparison between tiles from different tilers. Thanks to the intersecting nature of the multiplication operation, the model is less conservative and more aggressive tiling decision can be made by the proposed tilers. As a result, the qtree and btree tiling algorithm demonstrate mean speedup of 3.89X and 3.75X over the simple tiler, respectively.
+The figure above presents the element-wise multiplication execution time comparison between tiles from different tilers. Thanks to the intersecting nature of the multiplication operation, the model is less conservative, and more aggressive tiling decisions can be made by the proposed tilers. As a result, the qtree and btree tiling algorithms demonstrate a mean speedup of 3.89X and 3.75X over the simple tiler, respectively.
 
-Neither the element-wise addition operation nor the elemen-wise multiplication operation exhibit any data reuse. Furthermore, the results shown above only account for the execution time and not the configuration time. Therefore, the perforamnce improvement demonstarted in these two experiements solely comes from the improved pipelining resulting from bigger tiles (the second key factor). Through packing more data into each tiles, the tiles produced by qtree and btree are able to keep the pipeline full for a longer period of time compared to the simple tiler, resulting in higher pipelining throughput and shorter runtime.
+Neither the element-wise addition operation nor the element-wise multiplication operation exhibit any data reuse. Furthermore, the results shown above only account for the execution time and not the configuration time. Therefore, the performance improvement demonstrated in these two experiments solely comes from the improved pipelining resulting from bigger tiles (the second key factor). By packing more data into each tile, the tiles produced by qtree and btree can keep the pipeline full for a longer period compared to the simple tiler, resulting in higher pipelining throughput and shorter runtime.
 
 ### Configuration Time Comparison 
 
 ![Element-Wise Addition Configuration Time](./img/elemadd_config_time.png)
 
-The figure above presents the comparison of the total configuration time spent on configuring the CGRA to execute all the tiles produced by the simple, the qtree, and the btree tiler. On average, the qtree and btree tiling alorithms incurred 80.89% and 76.82% less configuration time compared to the simple tiler, respectively.
+The figure above presents the comparison of the total configuration time spent on configuring the CGRA to execute all the tiles produced by the simple, the qtree, and the btree tiler. On average, the qtree and btree tiling algorithms incurred 80.89% and 76.82% less configuration time compared to the simple tiler, respectively.
 
 ![Element-Wise Multiplication Configuration Time](./img/elemmul_config_time.png)
 
-Similarly, the tiles produced by qtree and btree tiler also demonstrate significant reduction in configuration time compared to that produced by the simple tiler. As illustrated in the figure above, we observe reductions of 89.98% and 89.91% in configuration for tiles from the qtree tiling and the btree tiling algorithm respectively.
+Similarly, the tiles produced by the qtree and btree tiler also demonstrate a significant reduction in configuration time compared to that produced by the simple tiler. As illustrated in the figure above, we observe reductions of 89.98% and 89.91% in configuration for tiles from the qtree tiling and the btree tiling algorithm respectively.
 
-The above two experiemental results demonstrate that the qtree and btree tiling algorithm is effective in packing more data into tiles, resulting in overall less data tiles at the end. This translate into lower configuration time overhead when we run the tiles on our CGRA, leading to higher performance (the first key factor)
+The above two experimental results demonstrate that the qtree and btree tiling algorithm is effective in packing more data into tiles, resulting in overall fewer data tiles at the end. This translates into lower configuration time overhead when we run the tiles on our CGRA, leading to higher performance (the first key factor)
 
-Unfortunately, due to time constraint, we were unable to finish implementing the code that perform tiling for applications with memory reuse (such as matrix multiplication). Therefore, we are unable to show concrete results of how Tiler-Swift further push the performance boundary by addressing the third key performance factor. 
+Unfortunately, due to time constraints, we were unable to finish implementing the code that performs tiling for applications with memory reuse (such as matrix multiplication). Therefore, we are unable to show concrete results of how Tiler-Swift further pushes the performance boundary by addressing the third key performance factor. 
 <!--
 
     Additional questions that Kayvon & TAs want us to address
