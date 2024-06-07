@@ -24,6 +24,30 @@ The tool has two main parts: the tiler and a performance model. They work togeth
 
 # Approach
 
+In this section, we will describe our approaches to design the tiling search algorithms and the performance models.
+
+## Tiling Search
+In the current implementation of Tiler-Swift, three distinct tiling search algorithms are available for user selection: `simple`, `qtree`, and `btree`. **These algorithms are designed on a shared assumption that larger tiles typically produce better results in terms of runtime.** This premise holds when accounting for tiling overheads, such as configuration time and pipeline initialization latency. Consequently, the algorithms prioritize attempting the largest feasible tile size initially and then strategically reduce the tile size until a feasible solution is found.
+
+### Simple Search
+In the simple search algorithm, input tensors are uniformly partitioned, resulting in tiles of equal size. The process begins with the largest possible tile, encompassing the entire original tensor. The algorithm then assesses whether this tile can fit within the available memory. If it cannot, the tile size is halved, and the assessment is repeated. This iterative process continues until all resulting tiles are sufficiently small to fit into memory. Due to the requirement to evaluate each tile in every iteration, the computational complexity increases exponentially as the algorithm approaches finer-grained tiles. Consequently, the runtime of the tool escalates significantly with each iteration as the tile sizes become progressively smaller.
+
+### Quad-tree Search
+In contrast to the simple search algorithm, the quad-tree implementation adopts a more selective approach to partitioning tensors. Instead of uniformly reducing the size of all tensors, this method only further subdivides tensors that fail to fit into memory. At each iteration, the algorithm initially checks if the given tensor can fit into the available memory. If it cannot, the tensor is divided into four quadrants, and the function is called recursively to assess the fit of each of the subdivided tensors. This targeted approach reduces unnecessary computations and handles tiling by focusing on problematic regions that require further division.
+
+### Binary-tree Search
+Similar to the quad-tree search, but instead of dividing them into four quadrants, we split them in half. The partitioning direction—either left/right or top/bottom—is determined based on the tensor's dimensions, with the longer side being halved to yield a more square-like shape compared to the quad-tree method. 
+
+### Tile Merging
+The three tiling algorithms can produce tiles with few non-zero elements due to uneven distribution of non-zeros in the tensor. For example, if non-zeros cluster in one corner, the algorithms will create dense tiles there and sparse tiles elsewhere. Merging these sparse tiles back into larger ones can improve efficiency. Our evaluation shows that applying tile merging to the quad-tree algorithm results in performance that is comparable to or better than the binary-tree method.
+
+
+## Performance Model
+1. Runtime Estimation
+2. how to estimate output non-zeros
+
+## 
+
 <!--
 
 (approx 1-2 pages max)
