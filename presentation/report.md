@@ -74,6 +74,14 @@ Similarly, the tiles produced by the qtree and btree tiler also demonstrate a si
 The above two experimental results demonstrate that the qtree and btree tiling algorithm is effective in packing more data into tiles, resulting in overall fewer data tiles at the end. This translates into lower configuration time overhead when we run the tiles on our CGRA, leading to higher performance (the first key factor)
 
 Unfortunately, due to time constraints, we were unable to finish implementing the code that performs tiling for applications with memory reuse (such as matrix multiplication). Therefore, we are unable to show concrete results of how Tiler-Swift further pushes the performance boundary by addressing the third key performance factor. 
+
+# Discussion
+
+One of the key design focus of Tiler-Swift is the execution time of the tiler itself, as demonstrated by our simple and straight-forward tiler and performance model design. A more brute-force tiler and a more sophsticated performance model would have further improve the application runtime. However, given that the tiler is ran every single time a new data input is given, the extra tiler runtime introduced by the complex tiler and model may actually exceed that of the CGRA-accelerated appliation and becomes the performance bottleneck. In future work, we will evaluate and compare the current method against a more complicated tiler/model combination. 
+
+# Conclusion
+
+In this project, we proposed Tiler-Swift, a efficient input tiling framework for sparse tensor computation aimed at CGRAs. We proposed and implemented two efficient tree based tiling algorithms that aim to maximize memory utilization and improve perofrmance. Furthermore, we also implemented a simple performance model for guiding the tiling algorithm. In our experimental results, Tiler-Swift demonstrated superior application runtime and reduced configuration overhead by maintaining optimally utilized pipeline and reduced number of tiles. In our future work, we plan on extending the curreent implementation to cover applications that exhibit memory reuse to demonstrate the full potential of Tiler-Swift. We also intend to integrate Tiler-Swift to our RTL/Chip desting flow to boost the runtime of our actual hardware.
 <!--
 
     Additional questions that Kayvon & TAs want us to address
