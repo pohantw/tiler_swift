@@ -67,13 +67,13 @@ In our evaluation results, we simulate our CGRA using comal [3], a cycle-accurat
 ### Execution Time Comparison 
 
 <p align="center">
-    <img src="./img/elemadd_runtime.png" width="60%">
+    <img src="./img/elemadd_runtime.png" width="70%">
 </p>
 
 The figure above compares the CGRA execution time performing element-wise addition between tiles produced by the simple, qtree, and btree tiler across different input data. It is demonstrated adopting the qtree and btree tiler, a mean speedup of 2.97X and 2.62X can be achieved.
 
 <p align="center">
-    <img src="./img/elemmul_runtime.png" width="60%">
+    <img src="./img/elemmul_runtime.png" width="70%">
 </p>
 
 The figure above presents the element-wise multiplication execution time comparison between tiles from different tilers. Thanks to the intersecting nature of the multiplication operation, the model is less conservative, and more aggressive tiling decisions can be made by the proposed tilers. As a result, the qtree and btree tiling algorithms demonstrate a mean speedup of 3.89X and 3.75X over the simple tiler, respectively.
@@ -83,13 +83,13 @@ Neither the element-wise addition operation nor the element-wise multiplication 
 ### Configuration Time Comparison 
 
 <p align="center">
-    <img src="./img/elemadd_config_time.png" width="60%">
+    <img src="./img/elemadd_config_time.png" width="70%">
 </p>
 
 The figure above presents the comparison of the total configuration time spent on configuring the CGRA to execute all the tiles produced by the simple, the qtree, and the btree tiler. On average, the qtree and btree tiling algorithms incurred 80.89% and 76.82% less configuration time compared to the simple tiler, respectively.
 
 <p align="center">
-    <img src="./img/elemmul_config_time.png" width="60%">
+    <img src="./img/elemmul_config_time.png" width="70%">
 </p>
 
 Similarly, the tiles produced by the qtree and btree tiler also demonstrate a significant reduction in configuration time compared to that produced by the simple tiler. As illustrated in the figure above, we observe reductions of 89.98% and 89.91% in configuration for tiles from the qtree tiling and the btree tiling algorithm respectively.
