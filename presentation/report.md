@@ -46,45 +46,67 @@ The performance model aims to estimate the runtime of a given tiled tensor for a
 
 For other more complex tensor operations such as matrix multiplication, the performance model needs to change and is listed in the future work section.
 
-# Evaluation and Results
+# Evaluation
 
-<!--
+## Hypothesis and Expectation
 
-    Additional questions that Kayvon & TAs want us to address
+Before evaluating the proposed method, we present the list of key factors that would lead to performance benefits and how Tiler-Swift can improve the overall hardware runtime by improving these factors. 
 
-    * do more complex perf model, does that help with tiling results? how does it scale
-    * does complex searching algorithm actually give you better results? can I just run brute force overnight, and it gives you best results?
--->
+The first factor in improving the application runtime of our CGRA is reducing reconfiguration time. Being a reconfigurable dataflow architecture, our CGRA must be reconfigured before every kernel(tile) execution to carry out the computation specified by the user. In other words, for every tile we run on the CGRA, a configuration time overhead is incurred. The goal of Tiler-Swift is to reduce the number of tiles by packing more nonzeros into data tiles.  As a result, the number of tiles and the number of reconfigurations required to produce the final matrix is reduced, alleviating the reconfiguration overhead.
 
+The second key factor is the ability of the tile to keep the pipeline full. Our CGRA implements a fully pipelined dataflow architecture by inserting hardware queues between processing elements to allow for overlapped execution. However, at the start of each tile computation, the pipeline hardware queues would need to be filled to achieve peak performance (ramp-up time). Similarly, at the end of each tile, the pipeline queues are drained and the hardware no longer achieves peak pipelining performance (ramp-down time). Tiler-Swift can mitigate excessive ramp-up and ramp-down overhead by reducing the total number of tiles and packing more data in each tile. By doing so, the tiles produced by the proposed method can keep the pipelining queues full for a longer period, achieving better overall performance.
 
-<!--
+The final key factor is the improved data reuse. For applications that exhibit data reuse (e.g., matrix multiplication), a single piece of data is computed multiple times before the results are produced. Through packing more data into a single tile, tiler-swift can improve the number of computations performed for each memory access, improving execution time.
 
-(as many pages as needed to make the points you want to make)
+## Evaluation Mehtodology
 
-To the staff, this is the most important part of the writeup. Begin by providing your own definition of success (this should be in terms of your goals). In other words, re-iterate the question you were trying to answer, or the performance boost you were hoping to obtain. Then describe what data/experiment needs to be run to provide evidence that the goals were either met or not met.
+In our evaluation results, we simulate our CGRA using comal [3], a cycle-accurate simulator that models the functionality and execution time of the dataflow architecture. Since reconfiguration time is not simulated in comal, we report the total configuration time by multiplying the total number of kernels with the per-kernel configuration time, which is fixed for the same sparse tensor operation, obtained from the register transfer level (RTL) simulation of our hardware. The proposed method is evaluated using 5 selected sparse matrices from the SuiteSparse [4] dataset, and the sparse tensor operations evaluated are matrix element-wise addition and matrix element-wise multiplication.
 
-Now describe the relevant parts of your experimental setup. What were the baseline algorithms? What machine was a performance test run on? What did you measure? What was the dataset used?  If you have a programming abstraction project, the experimental setup might include a description of the programs you implemented expressed using the API.
+## Evaluation Results
 
-Finally, I want to see the results of an experiment that demonstrate success (or failure) to meet goals. Sometimes great projects fail to meet their goals, or falsify a hypothesis, but they still do a great job in the scientific process of verifying this.
+### Execution Time Comparison 
 
-This might include:
+<p align="center">
+    <img src="./img/elemadd_runtime.png" width="60%">
+</p>
 
-* Provide graphs of speedup or execution time?
-* Compare total flops or model size
-* Compare precision and recall of a model.
-* Demonstrate that a 3D NeRF model was obtained, show output images of sufficient quality, etc.
+The figure above compares the CGRA execution time performing element-wise addition between tiles produced by the simple, qtree, and btree tiler across different input data. It is demonstrated adopting the qtree and btree tiler, a mean speedup of 2.97X and 2.62X can be achieved.
 
-IMPORTANT: In this writeup, I want you to interpret your graphs and numbers for me. What this means will be project dependent, but I want you to consider questions such as: Why does the graph look like it does? Does it make sense to you? What limited your speedup? Is it a lack of parallelism? (dependencies) Communication or synchronization overhead? Data transfer (memory-bound or bus transfer bound)? If a model is performing well, what are it's failure cases? When does it fail to generalize.
+<p align="center">
+    <img src="./img/elemmul_runtime.png" width="60%">
+</p>
 
-As you answer these questions, provide data and measurements to support your conclusions. If you are merely speculating, please state this explicitly. Performing a solid analysis of your implementation is a good way to pick up credit even if your optimization efforts did not yield the performance you were hoping for.
--->
+The figure above presents the element-wise multiplication execution time comparison between tiles from different tilers. Thanks to the intersecting nature of the multiplication operation, the model is less conservative, and more aggressive tiling decisions can be made by the proposed tilers. As a result, the qtree and btree tiling algorithms demonstrate a mean speedup of 3.89X and 3.75X over the simple tiler, respectively.
 
+Neither the element-wise addition operation nor the element-wise multiplication operation exhibit any data reuse. Furthermore, the results shown above only account for the execution time and not the configuration time. Therefore, the performance improvement demonstrated in these two experiments solely comes from the improved pipelining resulting from bigger tiles (the second key factor). By packing more data into each tile, the tiles produced by qtree and btree can keep the pipeline full for a longer period compared to the simple tiler, resulting in higher pipelining throughput and shorter runtime.
+
+### Configuration Time Comparison 
+
+<p align="center">
+    <img src="./img/elemadd_config_time.png" width="60%">
+</p>
+
+The figure above presents the comparison of the total configuration time spent on configuring the CGRA to execute all the tiles produced by the simple, the qtree, and the btree tiler. On average, the qtree and btree tiling algorithms incurred 80.89% and 76.82% less configuration time compared to the simple tiler, respectively.
+
+<p align="center">
+    <img src="./img/elemmul_config_time.png" width="60%">
+</p>
+
+Similarly, the tiles produced by the qtree and btree tiler also demonstrate a significant reduction in configuration time compared to that produced by the simple tiler. As illustrated in the figure above, we observe reductions of 89.98% and 89.91% in configuration for tiles from the qtree tiling and the btree tiling algorithm respectively.
+
+The above two experimental results demonstrate that the qtree and btree tiling algorithm is effective in packing more data into tiles, resulting in overall fewer data tiles at the end. This translates into lower configuration time overhead when we run the tiles on our CGRA, leading to higher performance (the first key factor)
+
+Unfortunately, due to time constraints, we were unable to finish implementing the code that performs tiling for applications with memory reuse (such as matrix multiplication). Therefore, we are unable to show concrete results of how Tiler-Swift further pushes the performance boundary by addressing the third key performance factor. 
+
+# Discussion
+
+One of the key design focus of Tiler-Swift is the execution time of the tiler itself, as demonstrated by our simple and straight-forward tiler and performance model design. A more brute-force tiler and a more sophsticated performance model would have further improve the application runtime. However, given that the tiler is ran every single time a new data input is given, the extra tiler runtime introduced by the complex tiler and model may actually exceed that of the CGRA-accelerated appliation and becomes the performance bottleneck. In future work, we will evaluate and compare the current method against a more complicated tiler/model combination. 
+
+# Conclusion
+
+In this project, we proposed Tiler-Swift, a efficient input tiling framework for sparse tensor computation aimed at CGRAs. We proposed and implemented two efficient tree based tiling algorithms that aim to maximize memory utilization and improve perofrmance. Furthermore, we also implemented a simple performance model for guiding the tiling algorithm. In our experimental results, Tiler-Swift demonstrated superior application runtime and reduced configuration overhead by maintaining optimally utilized pipeline and reduced number of tiles. In our future work, we plan on extending the curreent implementation to cover applications that exhibit memory reuse to demonstrate the full potential of Tiler-Swift. We also intend to integrate Tiler-Swift to our RTL/Chip desting flow to boost the runtime of our actual hardware.
 
 # Team Responsibilities
-
-<!--
-Please provide a [very short] breakdown of which parts of the project were performed by each team member. In general we hope to (and intend to) give all team members the same grade, but we still want to know what everyone worked on and what their role was.   
--->
 
 Both team members equally contributed to this project.
 * Po-Han Chen (50%)
@@ -103,4 +125,4 @@ Both team members equally contributed to this project.
 
 [3] R. Lacouture, et. al, "comal" (https://github.com/stanford-ppl/comal)
 
-[4] T. O. Odemuyiwa, et. at, "Accelerating Sparse Data Orchestration via Dynamic Reflexive Tiling," in International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS), March 2023 (https://dl.acm.org/doi/10.1145/3582016.3582064)
+[4] T. Davis, et. al, "The university of Florida sparse matrix collection," in ACM Transactions on Mathematical Software, December 2011 (https://doi.org/10.1145/2049662.2049663)
