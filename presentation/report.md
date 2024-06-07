@@ -6,30 +6,45 @@ Tiler-Swift is an efficient tiling software to speed up sparse tensor operations
 
 Specialized hardware has limited memory, so input data, often in the form of tensors, must be split into smaller segments called tiles. Usually, these tiles are of equal size to fit into memory efficiently. However, this method doesn't work well with sparse data, where some tiles have many zeros and others have many non-zero values. After compressing sparse data, tiles of the same initial size may end up with different storage sizes. To better use the hardware memory, we can use larger tiles that cover more of the input tensor, reducing the number of tiles needed.
 
-![Sparse Tiling](./img/sparse-tiling.png)
+<p align="center">
+    <img src="./img/sparse-tiling.png" width="60%">
+</p>
 
 To make Tiler-Swift work, it looks at three things. First, it checks how many zeros are in the input data. Second, it figures out what's being done to the data, so it can predict how much space it will need in the ouptut. Lastly, it needs to know about the computer's memory limits. These three things help Tiler-Swift decide how to split up the data into tiles. The result is a tiled picture based on these factors.
 
-![Tool IO](./img/tool-io.png)
+<p align="center">
+    <img src="./img/tool-io.png" width="60%">
+</p>
 
 The tool has two main parts: the tiler and a performance model. They work together in a loop to find the best tiling that fits the given limits. The challenge is to work out how the tiling search algorithm operates, how the model predicts performance, and how they exchange information with each other.
 
-![Tiler and Model](./img/tiler-model.png)
+<p align="center">
+    <img src="./img/tiler-model.png" width="60%">
+</p>
 
 # Approach
 
-<!--
+In this section, we will describe our approaches to design the tiling search algorithms and the performance models.
 
-(approx 1-2 pages max)
+## Tiling Search
+In the current implementation of Tiler-Swift, three distinct tiling search algorithms are available for user selection: `simple`, `qtree`, and `btree`. **These algorithms are designed on a shared assumption that larger tiles typically produce better results in terms of runtime.** This premise holds when accounting for tiling overheads, such as configuration time and pipeline initialization latency. Consequently, the algorithms prioritize attempting the largest feasible tile size initially and then strategically reduce the tile size until a feasible solution is found.
 
-Please describe your approach.  Please be brief (about a page or so max), but your description should be sufficiently detailed to provide the course staff a basic understanding of your approach. It might be very useful to include a figure here illustrating components of the system and/or their mapping to parallel hardware/or a DNN architecture.
+### Simple Search
+In the simple search algorithm, input tensors are uniformly partitioned, resulting in tiles of equal size. The process begins with the largest possible tile, encompassing the entire original tensor. The algorithm then assesses whether this tile can fit within the available memory. If it cannot, the tile size is halved, and the assessment is repeated. This iterative process continues until all resulting tiles are sufficiently small to fit into memory. Due to the requirement to evaluate each tile in every iteration, the computational complexity increases exponentially as the algorithm approaches finer-grained tiles. Consequently, the runtime of the tool escalates significantly with each iteration as the tile sizes become progressively smaller.
 
-* If your project involved optimizing code. Please describe the process of how you iterated toward a solution (what measurements did you make) What did you try that did not work? How to parts of the problem map to cores, threads, or vector lanes?
+### Quad-tree Search
+In contrast to the simple search algorithm, the quad-tree implementation adopts a more selective approach to partitioning tensors. Instead of uniformly reducing the size of all tensors, this method only further subdivides tensors that fail to fit into memory. At each iteration, the algorithm initially checks if the given tensor can fit into the available memory. If it cannot, the tensor is divided into four quadrants, and the function is called recursively to assess the fit of each of the subdivided tensors. This targeted approach reduces unnecessary computations and handles tiling by focusing on problematic regions that require further division.
 
-* If your project involved optimizing a DNN architecture, you could describe the architecture here, and be sure to provide intuition about how your model architecture choices were motivated by your goals.
+### Binary-tree Search
+Similar to the quad-tree search, but instead of dividing them into four quadrants, we split them in half. The partitioning direction—either left/right or top/bottom—is determined based on the tensor's dimensions, with the longer side being halved to yield a more square-like shape compared to the quad-tree method. 
 
-* __If your project involved started with an existing piece of code or DNN model, please clearly describe what you started with here, so it's clear what work you actually did in your project. e.g., "We started with this codebase and made these changes..."__
--->
+### Tile Merging
+The three tiling algorithms can produce tiles with few non-zero elements due to uneven distribution of non-zeros in the tensor. For example, if non-zeros cluster in one corner, the algorithms will create dense tiles there and sparse tiles elsewhere. Merging these sparse tiles back into larger ones can improve efficiency. Our evaluation shows that applying tile merging to the quad-tree algorithm results in performance that is comparable to or better than the binary-tree method.
+
+## Performance Model
+The performance model aims to estimate the runtime of a given tiled tensor for a target operation, guiding the next iteration of the tiling process. Currently, we support only element-wise operations such as addition and multiplication, and use the number of output non-zeros as an indicator for runtime, assuming each output non-zero requires the same processing time. To expedite estimation and ensure tiling functionality, we use worst-case scenarios for our calculations. For element-wise addition, we assume no overlap among input non-zeros, making the output non-zeros equal to the total sum of input non-zeros. For element-wise multiplication, we assume complete overlap among input non-zeros, resulting in the number of output non-zeros being the maximum count from the input tensors.
+
+For other more complex tensor operations such as matrix multiplication, the performance model needs to change and is listed in the future work section.
 
 # Evaluation and Results
 
